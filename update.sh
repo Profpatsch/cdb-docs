@@ -21,5 +21,5 @@ pushd "$tmp"/cr.yp.to
 # the source tar is always included, so remove
 rm cdb/cdb-${version}.tar.gz
 
-cp -r * "$here"
+cp -r * "$here"/docs
 popd
