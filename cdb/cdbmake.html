@@ -1,0 +1,79 @@
+<html>
+<body>
+<a href="https://cr.yp.to/djb.html">D. J. Bernstein</a>
+<br><a href="https://cr.yp.to/data.html">Data structures and program structures</a>
+<br><a href="../cdb.html">cdb</a>
+<h1>The cdbmake and cdbdump programs</h1>
+<pre>
+     cdbmake <i>f</i> <i>ftmp</i>
+</pre>
+<tt>cdbmake</tt> reads a series of encoded records
+from its standard input
+and writes a
+<a href="cdb.txt">constant database</a>
+to <tt><i>f</i></tt>.
+<p>
+<tt>cdbmake</tt> ensures that <tt><i>f</i></tt>
+is updated atomically,
+so programs reading <tt><i>f</i></tt>
+never have to wait for <tt>cdbmake</tt> to finish.
+It does this by first writing the database to <tt><i>ftmp</i></tt>
+and then moving <tt><i>ftmp</i></tt> on top of <tt><i>f</i></tt>.
+If <tt><i>ftmp</i></tt> already exists, it is destroyed.
+The directories containing <tt><i>ftmp</i></tt> and <tt><i>f</i></tt>
+must be writable to <tt>cdbmake</tt>;
+they must also be on the same filesystem.
+<p>
+<tt>cdbmake</tt> always makes sure that <tt><i>ftmp</i></tt>
+is safely written to disk before it replaces <tt><i>f</i></tt>.
+If the input is in a bad format
+or if <tt>cdbmake</tt> has any trouble
+writing <tt><i>ftmp</i></tt> to disk,
+<tt>cdbmake</tt> complains and leaves <tt><i>f</i></tt> alone.
+<p>
+<pre>
+     cdbdump
+</pre>
+<tt>cdbdump</tt>
+reads a constant database from its standard input
+and prints the database contents,
+in <tt>cdbmake</tt> format,
+on standard output.
+<h2>Record format</h2>
+Records are indexed by <b>keys</b>.
+A key is a string.
+<tt><i>f</i></tt>
+is structured so that another program,
+starting from a key, can quickly find the relevant record.
+<tt>cdbmake</tt> allows several records with the same key,
+although
+<ul>
+<li>most readers take only the first record, and
+<li><tt>cdbmake</tt> slows down somewhat
+if there are many records with the same key.
+</ul>
+<tt>cdbmake</tt> and <tt>cdbdump</tt> preserve the order of records.
+<p>
+A record is encoded for <tt>cdbmake</tt>
+as <tt>+<i>klen</i>,<i>dlen</i>:<i>key</i>-&gt;<i>data</i></tt>
+followed by a newline.
+Here <tt><i>klen</i></tt> is the number of bytes in <tt><i>key</i></tt>
+and <tt><i>dlen</i></tt> is the number of bytes in <tt><i>data</i></tt>.
+The end of data is indicated by an extra newline.
+For example:
+<pre>
+     +3,5:one-&gt;Hello
+     +3,7:two-&gt;Goodbye
+
+</pre>
+<tt><i>key</i></tt> and <tt><i>data</i></tt>
+may contain any characters,
+including colons, dashes, newlines, and nulls.
+<p>
+Keys and data do not have to fit into memory,
+but <tt>cdbmake</tt> needs roughly 16 bytes of memory per record.
+A database cannot exceed 4 gigabytes.
+<p>
+<tt><i>f</i></tt> is portable across machines.
+</body>
+</html>

@@ -1,0 +1,136 @@
+<html>
+<body>
+<a href="https://cr.yp.to/djb.html">D. J. Bernstein</a>
+<br><a href="https://cr.yp.to/data.html">Data structures and program structures</a>
+<br><a href="../cdb.html">cdb</a>
+<h1>The cdb-reading library interface</h1>
+<h2>Overview</h2>
+You can read records in a
+<a href="cdb.txt">constant database</a>
+from file descriptor <tt><i>fd</i></tt> as follows:
+<ol>
+<li>Use <tt>cdb_init</tt> to place information about <tt><i>fd</i></tt>
+into a <tt>struct cdb</tt> variable <tt><i>c</i></tt>.
+<li>Carry out any number of searches, as described below.
+<li>Use <tt>cdb_free</tt> to remove any memory map
+that might have been reserved by <tt>cdb_init</tt>.
+</ol>
+Each search works as follows:
+<ol>
+<li>Use <tt>cdb_find</tt> to search for a record under key <tt><i>k</i></tt>.
+If <tt>cdb_find</tt> returns 0, the database does not contain that key; stop.
+If <tt>cdb_find</tt> returns -1, there was a read error; abort.
+<li>Use <tt>cdb_datalen</tt> to find the number of bytes of data in this record.
+Allocate a pointer <tt><i>d</i></tt> to a region of memory
+large enough to hold the data.
+If not enough memory is available, abort.
+<li>Use <tt>cdb_read</tt> with <tt>cdb_datapos</tt>
+to read the data.
+If <tt>cdb_read</tt> returns -1, there was a read error; abort.
+<li>Do something with the data,
+and then free the allocated region of memory.
+</ol>
+There may be several records under a single key.
+You can use <tt>cdb_findnext</tt> to find the next record under this key.
+<h2>Details</h2>
+<pre>
+     #include &lt;cdb.h&gt;
+
+     cdb_init(&amp;<i>c</i>,<i>fd</i>);
+     cdb_free(&amp;<i>c</i>);
+     <i>result</i> = cdb_read(&amp;<i>c</i>,<i>d</i>,<i>dlen</i>,<i>dpos</i>);
+
+     cdb_findstart(&amp;<i>c</i>);
+     <i>result</i> = cdb_findnext(&amp;<i>c</i>,<i>k</i>,<i>klen</i>);
+     <i>result</i> = cdb_find(&amp;<i>c</i>,<i>k</i>,<i>klen</i>);
+
+     <i>dpos</i> = cdb_datapos(&amp;<i>c</i>);
+     <i>dlen</i> = cdb_datalen(&amp;<i>c</i>);
+
+     static struct cdb <i>c</i>;
+     int <i>fd</i>;
+
+     char *<i>d</i>;
+     unsigned int <i>dlen</i>;
+     uint32 <i>dpos</i>;
+
+     char *<i>k</i>;
+     unsigned int <i>klen</i>;
+     int <i>result</i>;
+</pre>
+<p>
+A <tt>struct cdb</tt> variable such as <tt><i>c</i></tt>
+is either unallocated or allocated.
+If it is allocated,
+it holds information about a constant database:
+<ul>
+<li>a file descriptor <tt><i>fd</i></tt> reading from the database;
+<li>if convenient,
+a shared memory map reading from the database; and
+<li>information about a search in progress.
+</ul>
+<tt><i>c</i></tt>
+must be initialized to zero, meaning unallocated.
+<p>
+<tt>cdb_free</tt> unallocates <tt><i>c</i></tt>
+if <tt><i>c</i></tt> is allocated.
+Otherwise it leaves <tt><i>c</i></tt> alone.
+<tt>cdb_free</tt> does not close <tt><i>fd</i></tt>.
+<p>
+<tt>cdb_init</tt>
+allocates <tt><i>c</i></tt> to hold information
+about a constant database read by descriptor <tt><i>fd</i></tt>.
+You may call <tt>cdb_init</tt> repeatedly;
+if <tt><i>c</i></tt> is already allocated,
+<tt>cdb_init</tt> unallocates it first. 
+<p>
+<tt>cdb_read</tt>
+reads <tt><i>dlen</i></tt> bytes into <tt><i>d</i></tt>
+from byte position <tt><i>dpos</i></tt> in the database.
+You must allocate <tt><i>c</i></tt> before calling <tt>cdb_read</tt>.
+Normally <tt>cdb_read</tt> returns 0.
+If the database file is shorter than <tt><i>dpos</i>+<i>dlen</i></tt> bytes,
+or if there is a disk read error,
+<tt>cdb_read</tt> returns -1, setting <tt>errno</tt> appropriately.
+<p>
+<tt>cdb_findstart</tt>
+prepares <tt><i>c</i></tt> to search for the first record under a new key.
+You must allocate <tt><i>c</i></tt> before calling <tt>cdb_findstart</tt>,
+and you must call <tt>cdb_findstart</tt>
+before calling <tt>cdb_findnext</tt>.
+<p>
+<tt>cdb_findnext</tt>
+looks for the <i>n</i>th record under key <tt><i>k</i></tt> in the database,
+where <tt><i>n</i></tt> is the number of calls to <tt>cdb_findnext</tt>
+after the most recent call to <tt>cdb_findstart</tt>.
+If it finds the record,
+<tt>cdb_findnext</tt> returns 1;
+if there are exactly <tt><i>n</i>-1</tt> such records,
+<tt>cdb_findnext</tt> returns 0;
+if there are fewer than <tt><i>n</i>-1</tt> such records,
+the behavior of <tt>cdb_findnext</tt> is undefined;
+if there is a database format error or disk error,
+<tt>cdb_findnext</tt> returns -1, setting <tt>errno</tt> appropriately.
+Each call to <tt>cdb_findnext</tt>
+(before another call to <tt>cdb_findstart</tt>)
+must use the same <tt><i>k</i></tt>
+and <tt><i>klen</i></tt>.
+<p>
+If <tt>cdb_findnext</tt> returns 1,
+it arranges for <tt>cdb_datapos</tt> to return the starting byte position
+of the data in the record, and for <tt>cdb_datalen</tt>
+to return the number of bytes of data in the record.
+Otherwise the results of <tt>cdb_datapos</tt> and <tt>cdb_datalen</tt>
+are undefined.
+<p>
+<tt>cdb_find</tt> is the same as <tt>cdb_findstart</tt>
+followed by <tt>cdb_findnext</tt>:
+it finds the first record under key <tt><i>k</i></tt>.
+<p>
+Beware that these functions
+may rely on non-atomic operations on the <tt><i>fd</i></tt> ofile,
+such as seeking to a particular position and then reading.
+Do not attempt two simultaneous database reads
+using a single ofile.
+</body>
+</html>

@@ -1,0 +1,35 @@
+<html>
+<body>
+<a href="https://cr.yp.to/djb.html">D. J. Bernstein</a>
+<br><a href="https://cr.yp.to/data.html">Data structures and program structures</a>
+<br><a href="../cdb.html">cdb</a>
+<h1>The cdbget program</h1>
+<pre>
+     cdbget <i>k</i>
+</pre>
+<tt>cdbget</tt>
+searches for a record with key <tt><i>k</i></tt>
+in a
+<a href="cdb.txt">constant database</a>.
+The constant database must be readable (and seekable)
+on <tt>cdbget</tt>'s standard input.
+<p>
+Normally <tt>cdbget</tt> prints the data
+in the first record with key <tt><i>k</i></tt>
+and exits 0.
+If there is no record with the key <tt><i>k</i></tt>,
+<tt>cdbget</tt> exits 100 without printing anything.
+<p>
+If <tt>cdbget</tt> encounters
+a read error, write error, or database format error,
+it complains and exits 111.
+<p>
+<pre>
+     cdbget <i>k</i> <i>s</i>
+</pre>
+Given a numeric <tt><i>s</i></tt> argument,
+<tt>cdbget</tt> skips past the first <tt><i>s</i></tt> records
+with key <tt><i>k</i></tt>,
+and prints the data in the next record.
+</body>
+</html>

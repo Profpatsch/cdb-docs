@@ -1,0 +1,40 @@
+<html>
+<body>
+<a href="https://cr.yp.to/djb.html">D. J. Bernstein</a>
+<br><a href="https://cr.yp.to/data.html">Data structures and program structures</a>
+<br><a href="../cdb.html">cdb</a>
+<h1>The cdbstats and cdbtest programs</h1>
+<tt>cdbstats</tt>
+reads a (seekable) constant database
+from its standard input
+and prints a few statistics:
+<ul>
+<li><tt>records</tt> is the number of records in the database,
+<li><tt>d0</tt> is the number of records at distance 0 from their hash,
+<li><tt>d1</tt> is the number of records at distance 1 from their hash, etc.
+</ul>
+<p>
+<tt>cdbtest</tt>
+reads a (seekable) constant database
+from its standard input.
+For each record in the database,
+it double-checks that the record can be found by its key.
+It prints tallies in several categories:
+<ul>
+<li><tt>found</tt> is the number of records
+found correctly by their keys.
+<li><tt>different record</tt> is the number of records
+where a different record was found with the same key.
+This should not happen unless the database has multiple records
+with the same key.
+<li><tt>bad length</tt> is the number of records
+found but with the wrong data length.
+This should never happen.
+<li><tt>not found</tt> is the number of records not found.
+This should never happen.
+<li><tt>untested</tt> is the number of records
+with keys longer than 1024 bytes.
+<tt>cdbtest</tt> doesn't bother testing these records.
+</ul>
+</body>
+</html>
