@@ -8,7 +8,7 @@ To update to a newer version:
 ./update.sh <version-string>
 ```
 
-It overwrites the files in the current directory, recursively, with the newer ones available at http://cr.yp.to/cdb/.
+It overwrites the files in the current directory, recursively, with the newer ones available at http://cr.yp.to/cdb.html.
 
 ## License
 
